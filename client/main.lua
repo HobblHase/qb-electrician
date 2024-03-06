@@ -27,7 +27,7 @@ local function SetJobBlip(title)
     SetBlipAsShortRange(JobBlip, true)
     SetBlipColour(JobBlip, 5)
     BeginTextCommandSetBlipName("STRING")
-    AddTextComponentSubstringPlayerName(Config.Locations[title].label)
+    AddTextComponentSubstringPlayerName(Lang:t("main.label"))
     EndTextCommandSetBlipName(JobBlip)
 end
 
@@ -53,7 +53,9 @@ end
 local function VehicleCheck(vehicle)
     local retval = false
     for k, v in pairs(Config.JobVehicles) do
-        print(v)
+        if Config.Debug then
+            print(v)
+        end
         if GetEntityModel(vehicle) == GetHashKey(v) then
             retval = true
         end
@@ -73,10 +75,10 @@ RegisterNetEvent('qb-electrician:client:VehPick', function()
 end)
 
 CreateThread(function()
-    if Config.ShowBlip then
+    if PlayerJob.name == "electrician" then
         SetJobBlip("job")
     end
-end)
+end) -- ensures blip for elictricians
 
 -- Markers for Job Vehicle
 CreateThread(function()
@@ -84,15 +86,50 @@ CreateThread(function()
     while true do
         Wait(0)
         local pos = GetEntityCoords(PlayerPedId())
-        -- if PlayerJob.name == "electrician" then
+        if Config.UseJob then
+            if PlayerJob.name == "electrician" then -- you can change the job on this line :D -- if in the config.lua 'UseJob = true' then you have to be in the job 'electrician' else you can do it w every job
+                if #(pos - vector3(Config.Locations["vehicle"].coords.x, Config.Locations["vehicle"].coords.y, Config.Locations["vehicle"].coords.z)) < 10 then
+                    inRange = true
+                    DrawMarker(2, Config.Locations["vehicle"].coords.x, Config.Locations["vehicle"].coords.y, Config.Locations["vehicle"].coords.z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.3, 0.2, 0.15, 200, 200, 200, 222, false, false, false, true, false, false, false)
+                    if #(pos - vector3(Config.Locations["vehicle"].coords.x, Config.Locations["vehicle"].coords.y, Config.Locations["vehicle"].coords.z)) < 1.5 then
+                        if IsPedInAnyVehicle(PlayerPedId(), false) then
+                            DrawText3D(Config.Locations["vehicle"].coords.x, Config.Locations["vehicle"].coords.y, Config.Locations["vehicle"].coords.z, Lang:t("main.park_in"))
+                        else
+                            DrawText3D(Config.Locations["vehicle"].coords.x, Config.Locations["vehicle"].coords.y, Config.Locations["vehicle"].coords.z, Lang:t("main.park_out"))
+                        end
+                        if IsControlJustReleased(0, 38) then
+                            if IsPedInAnyVehicle(PlayerPedId(), false) then
+                                if GetPedInVehicleSeat(GetVehiclePedIsIn(PlayerPedId()), -1) == PlayerPedId() then
+                                    if VehicleCheck(GetVehiclePedIsIn(PlayerPedId(), false)) then
+                                        DeleteVehicle(GetVehiclePedIsIn(PlayerPedId()))
+                                        for k,v in ipairs(JobsinSession) do
+                                            RemoveBlip(v.BlipId)
+                                        end
+                                    else
+                                        QBCore.Functions.Notify(Lang:t("error.no_elec_veh"), 'error')
+                                    end
+                                else
+                                    QBCore.Functions.Notify(Lang:t("error.not_driver"), 'error')
+                                end
+                            else
+                                TriggerEvent('qb-electrician:client:VehPick')
+                            end
+                        end
+                    end
+                end
+                if not inRange then
+                    Wait(1000)
+                end
+            end
+        else
             if #(pos - vector3(Config.Locations["vehicle"].coords.x, Config.Locations["vehicle"].coords.y, Config.Locations["vehicle"].coords.z)) < 10 then
                 inRange = true
                 DrawMarker(2, Config.Locations["vehicle"].coords.x, Config.Locations["vehicle"].coords.y, Config.Locations["vehicle"].coords.z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.3, 0.2, 0.15, 200, 200, 200, 222, false, false, false, true, false, false, false)
                 if #(pos - vector3(Config.Locations["vehicle"].coords.x, Config.Locations["vehicle"].coords.y, Config.Locations["vehicle"].coords.z)) < 1.5 then
                     if IsPedInAnyVehicle(PlayerPedId(), false) then
-                        DrawText3D(Config.Locations["vehicle"].coords.x, Config.Locations["vehicle"].coords.y, Config.Locations["vehicle"].coords.z, "~g~E~w~ - Store Vehicle")
+                        DrawText3D(Config.Locations["vehicle"].coords.x, Config.Locations["vehicle"].coords.y, Config.Locations["vehicle"].coords.z, Lang:t("main.park_in"))
                     else
-                        DrawText3D(Config.Locations["vehicle"].coords.x, Config.Locations["vehicle"].coords.y, Config.Locations["vehicle"].coords.z, "~g~E~w~ - Retrieve Vehicle")
+                        DrawText3D(Config.Locations["vehicle"].coords.x, Config.Locations["vehicle"].coords.y, Config.Locations["vehicle"].coords.z, Lang:t("main.park_out"))
                     end
                     if IsControlJustReleased(0, 38) then
                         if IsPedInAnyVehicle(PlayerPedId(), false) then
@@ -103,21 +140,21 @@ CreateThread(function()
                                         RemoveBlip(v.BlipId)
                                     end
                                 else
-                                    QBCore.Functions.Notify('This is not an electrician vehicle!', 'error')
+                                    QBCore.Functions.Notify(Lang:t("error.no_elec_veh"), 'error')
                                 end
                             else
-                                QBCore.Functions.Notify('You must be the driver to do this!', 'error')
+                                QBCore.Functions.Notify(Lang:t("error.not_driver"), 'error')
                             end
                         else
                             TriggerEvent('qb-electrician:client:VehPick')
                         end
-                    end  
+                    end
                 end
             end
             if not inRange then
                 Wait(1000)
             end
-        -- end
+        end
     end
 end)
 
@@ -125,9 +162,9 @@ end)
 RegisterNetEvent('qb-electrician:client:SpawnVehicle', function(vehicleInfo)
     local coords = Config.Locations["vehicle"].coords
     QBCore.Functions.SpawnVehicle(vehicleInfo, function(veh)
-        SetVehicleNumberPlateText(veh, "ELEC"..tostring(math.random(1000, 9999)))
+        SetVehicleNumberPlateText(veh, Lang:t("main.plate") ..tostring(math.random(1000, 9999)))
         SetEntityHeading(veh, coords.w)
-        exports['LegacyFuel']:SetFuel(veh, 100.0)
+        exports['LegacyFuel']:SetFuel(veh, 100.0) -- if u r using LegacyFuel dont edit, if not you have to replace this export :D
         TaskWarpPedIntoVehicle(PlayerPedId(), veh, -1)
         SetEntityAsMissionEntity(veh, true, true)
         TriggerEvent("vehiclekeys:client:SetOwner", QBCore.Functions.GetPlate(veh))
@@ -140,7 +177,7 @@ end)
 function StartJobLocations()
     jobchoice = math.random(1,5)
     SetWorkBlip(jobchoice)
-    QBCore.Functions.Notify("Your jobs have been added to your GPS - Go and complete your work.", "primary")
+    QBCore.Functions.Notify(Lang:t("main.job_start"), 'primary')
 end
 
 -- Individual Job Site Interactions
@@ -151,15 +188,55 @@ RegisterNetEvent('qb-electrician:client:JobMarkers', function(k, v)
         Wait(0)
         for k, v in ipairs(JobsinSession) do
             local pos = GetEntityCoords(PlayerPedId())
-            if CompleteRepairs < 5 then
-                -- if PlayerJob.name == "electrician" then
+            if Config.UseJob and PlayerJob.name == "electrician" then -- you can change the job on this line :D -- if in the config.lua 'UseJob = true' then you have to be in the job 'electrician' else you can do it w every job
+                if CompleteRepairs < 5 then
                     if #(pos - vector3(v.x, v.y, v.z)) < 10 then
                         inRange = true
                         DrawMarker(2, v.x, v.y, v.z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.3, 0.2, 0.15, 200, 200, 200, 222, false, false, false, true, false, false, false)
                         if #(pos - vector3(v.x, v.y, v.z)) < 1.5 then
-                            DrawText3D(v.x, v.y, v.z, "~g~E~w~ - Repair Electrical Fault")
+                            DrawText3D(v.x, v.y, v.z, Lang:t("main.repair"))
                             if IsControlJustReleased(0, 38) then
-                                QBCore.Functions.Progressbar("repair_work", "Repairing Fault...", math.random(10000, 12000), false, true, {
+                                QBCore.Functions.Progressbar("repair_work", Lang:t("progress.repair"), math.random(Config.RepairTimeMin, Config.RepairTimeMax), false, true, {
+                                    disableMovement = true,
+                                    disableCarMovement = true,
+                                    disableMouse = false,
+                                    disableCombat = true,
+                                }, {
+                                    animDict = "anim@amb@clubhouse@tutorial@bkr_tut_ig3@",
+                                    anim = "machinic_loop_mechandplayer",
+                                    flags = 49,
+                                }, {}, {}, function()
+                                    CompleteRepairs = CompleteRepairs + 1
+                                    if Config.Debug then
+                                        print(CompleteRepairs)
+                                    end
+                                    if CompleteRepairs <= 4 then
+                                        QBCore.Functions.Notify(Lang:t("succes.repaired"))
+                                    else
+                                        QBCore.Functions.Notify(Lang:t("succes.repaired_all"))
+                                    end
+                                    RemoveBlip(v.BlipId)
+                                    table.remove(JobsinSession, k)
+                                end, function() -- Cancel
+                                    StopAnimTask(PlayerPedId(), "anim@amb@clubhouse@tutorial@bkr_tut_ig3@", "machinic_loop_mechandplayer", 1.0)
+                                    QBCore.Functions.Notify(Lang:t("error.canceled"), "error")
+                                end)
+                            end
+                        end
+                    end
+                    if not inRange then
+                        Wait(1000)
+                    end
+                end
+            else
+                if CompleteRepairs < 5 then
+                    if #(pos - vector3(v.x, v.y, v.z)) < 10 then
+                        inRange = true
+                        DrawMarker(2, v.x, v.y, v.z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.3, 0.2, 0.15, 200, 200, 200, 222, false, false, false, true, false, false, false)
+                        if #(pos - vector3(v.x, v.y, v.z)) < 1.5 then
+                            DrawText3D(v.x, v.y, v.z, Lang:t("main.repair"))
+                            if IsControlJustReleased(0, 38) then
+                                QBCore.Functions.Progressbar("repair_work", Lang:t("progress.repair"), math.random(Config.RepairTimeMin, Config.RepairTimeMax), false, true, {
                                     disableMovement = true,
                                     disableCarMovement = true,
                                     disableMouse = false,
@@ -170,25 +247,27 @@ RegisterNetEvent('qb-electrician:client:JobMarkers', function(k, v)
                                     flags = 49,
                                 }, {}, {}, function() -- Done
                                     CompleteRepairs = CompleteRepairs + 1
-                                    print(CompleteRepairs)
+                                    if Config.Debug then
+                                        print(CompleteRepairs)
+                                    end
                                     if CompleteRepairs <= 4 then
-                                        QBCore.Functions.Notify("You've repaired the electrical fault. Head to the next job.")
+                                        QBCore.Functions.Notify(Lang:t("succes.repaired"))
                                     else
-                                        QBCore.Functions.Notify("You've finished all your jobs - Return your vehicle and collect your payslip.")
+                                        QBCore.Functions.Notify(Lang:t("succes.repaired_all"))
                                     end
                                     RemoveBlip(v.BlipId)
                                     table.remove(JobsinSession, k)
                                 end, function() -- Cancel
                                     StopAnimTask(PlayerPedId(), "anim@amb@clubhouse@tutorial@bkr_tut_ig3@", "machinic_loop_mechandplayer", 1.0)
-                                    QBCore.Functions.Notify("Cancelled..", "error")
+                                    QBCore.Functions.Notify(Lang:t("error.canceled"), "error")
                                 end)
-                            end  
+                            end
                         end
                     end
                     if not inRange then
                         Wait(1000)
                     end
-                -- end
+                end
             end
         end
     end
@@ -200,12 +279,36 @@ CreateThread(function()
     while true do
         Wait(0)
         local pos = GetEntityCoords(PlayerPedId())
-        -- if PlayerJob.name == "electrician" then
+        if Config.UseJob then -- you can change the job on this line :D -- if in the config.lua 'UseJob = true' then you have to be in the job 'electrician' else you can do it w every job
+            if PlayerJob.name == "electrician" then
+                if #(pos - vector3(Config.Locations["payslip"].coords.x, Config.Locations["payslip"].coords.y, Config.Locations["payslip"].coords.z)) < 10 then
+                    inRange = true
+                    DrawMarker(2, Config.Locations["payslip"].coords.x, Config.Locations["payslip"].coords.y, Config.Locations["payslip"].coords.z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.3, 0.2, 0.15, 200, 200, 200, 222, false, false, false, true, false, false, false)
+                    if #(pos - vector3(Config.Locations["payslip"].coords.x, Config.Locations["payslip"].coords.y, Config.Locations["payslip"].coords.z)) < 1.5 then
+                        DrawText3D(Config.Locations["payslip"].coords.x, Config.Locations["payslip"].coords.y, Config.Locations["payslip"].coords.z, Lang:t("main.payslip"))
+                        if IsControlJustReleased(0, 38) then
+                            if CompleteRepairs ~= 0 then
+                                TriggerServerEvent('qb-electrician:server:Payslip', CompleteRepairs)
+                                CompleteRepairs = 0
+                                for k,v in ipairs(JobsinSession) do
+                                    RemoveBlip(v.BlipId)
+                                end
+                            else
+                                QBCore.Functions.Notify(Lang:t("error.not_worked"), "error")
+                            end
+                        end
+                    end
+                end
+                if not inRange then
+                    Wait(1000)
+                end
+            end
+        else
             if #(pos - vector3(Config.Locations["payslip"].coords.x, Config.Locations["payslip"].coords.y, Config.Locations["payslip"].coords.z)) < 10 then
                 inRange = true
                 DrawMarker(2, Config.Locations["payslip"].coords.x, Config.Locations["payslip"].coords.y, Config.Locations["payslip"].coords.z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.3, 0.2, 0.15, 200, 200, 200, 222, false, false, false, true, false, false, false)
                 if #(pos - vector3(Config.Locations["payslip"].coords.x, Config.Locations["payslip"].coords.y, Config.Locations["payslip"].coords.z)) < 1.5 then
-                    DrawText3D(Config.Locations["payslip"].coords.x, Config.Locations["payslip"].coords.y, Config.Locations["payslip"].coords.z, "~g~E~w~ - Payslip")
+                    DrawText3D(Config.Locations["payslip"].coords.x, Config.Locations["payslip"].coords.y, Config.Locations["payslip"].coords.z, Lang:t("main.payslip"))
                     if IsControlJustReleased(0, 38) then
                         if CompleteRepairs ~= 0 then
                             TriggerServerEvent('qb-electrician:server:Payslip', CompleteRepairs)
@@ -214,15 +317,14 @@ CreateThread(function()
                                 RemoveBlip(v.BlipId)
                             end
                         else
-                            QBCore.Functions.Notify("You haven't done any jobs yet!", "error")
+                            QBCore.Functions.Notify(Lang:t("error.not_worked"), "error")
                         end
-                        
-                    end  
+                    end
                 end
             end
             if not inRange then
                 Wait(1000)
             end
-        -- end
+        end
     end
 end)

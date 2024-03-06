@@ -1,14 +1,17 @@
 Config = Config or {}
 
-Config.ShowBlip = true -- Sets whether the blip shows up for the Job Location or not
+Config.Debug = true -- true means that you get prints via F8 console
+--DEBUG OPTION (prints) ⬆
+
+Config.UseJob = true -- set this to 'true' to enable the job-whitelist (recommended) | set this to 'false' if you want that every job can do the electrician things
+
+Config.RepairTimeMin = 14000 -- then min. time that a repair can take
+Config.RepairTimeMax = 32000  -- the max. time that a repair can take
 
 Config.JobPrice = math.random(240, 290) -- Amount made per job completed. Note: This isn't the final amount as there is scripted bonuses for payments as well.
 
-Config.PaymentTax = 15 -- Amount taken away from players as Tax (as a percentage - Default - 15%)
-
 Config.Locations = {
     ["job"] = {
-        label = "Electrician Job",
         coords = vector4(931.99, -1807.77, 30.71, 265.65),
     },
     ["vehicle"] = {

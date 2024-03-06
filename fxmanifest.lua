@@ -1,10 +1,19 @@
 fx_version 'cerulean'
 game 'gta5'
 lua54 'yes'
-description 'Electrician Job - By Spinks'
-version '1.0.0'
 
-shared_script 'config.lua'
+shared_script {
+    
+    '@qb-core/shared/locale.lua',
+    'locales/*.lua',
+    'config.lua'
+}
 
-client_script 'client/main.lua'
-server_script 'server/main.lua'
+client_script {
+    
+    'client/main.lua'
+}
+server_script {
+    
+    'server/main.lua'
+}

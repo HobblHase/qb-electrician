@@ -15,8 +15,8 @@ RegisterNetEvent('qb-electrician:server:Payslip', function(drops)
         bonus = math.ceil((Config.JobPrice / 10) * 12) + 600
     end
     local price = (Config.JobPrice * drops) + bonus
-    local taxAmount = math.ceil((price / 100) * Config.PaymentTax)
-    local payment = price - taxAmount
+    local Amount = math.ceil((price / 100)) -- removed the tax bc there are better tax scripts
+    local payment = price - Amount
     Player.Functions.AddMoney("bank", payment, "electrician-salary")
-    TriggerClientEvent('QBCore:Notify', src, 'You were paid $'..payment.. ' - Payment: $'..price.. ' minus $' ..taxAmount.. 'in taxes.', 'success')
+    TriggerClientEvent('QBCore:Notify', src, Lang:t("succes.payout"), 'success')
 end)
