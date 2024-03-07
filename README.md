@@ -22,7 +22,6 @@ A **only** QBCore script that was created by FaultyMatrix and jay-fivem. I edite
                 payment = 65
             },
         },
-	},
 ```
 
 **DISCLAIMER**
