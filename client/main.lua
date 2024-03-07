@@ -31,24 +31,6 @@ local function SetJobBlip(title)
     EndTextCommandSetBlipName(JobBlip)
 end
 
--- Job Blip Function
-local function SetWorkBlip(d)
-    for k, v in pairs(Config.Locations["jobset" ..d]) do
-        WorkBlip = AddBlipForCoord(v.coords.x, v.coords.y, v.coords.z)
-        SetBlipSprite(WorkBlip, 143)
-        SetBlipDisplay(WorkBlip, 4)
-        SetBlipScale(WorkBlip, 0.5)
-        SetBlipAsShortRange(WorkBlip, true)
-        SetBlipColour(WorkBlip, 26)
-        BeginTextCommandSetBlipName("STRING")
-        AddTextComponentSubstringPlayerName(v.name)
-        EndTextCommandSetBlipName(WorkBlip)
-        table.insert(JobsinSession, {id = k, x = v.coords.x, y = v.coords.y, z = v.coords.z, BlipId = WorkBlip})
-    end
-    TriggerEvent('qb-electrician:client:JobMarkers')
-end
-
-
 -- Checks if car is a Job Vehicle
 local function VehicleCheck(vehicle)
     local retval = false
@@ -75,8 +57,18 @@ RegisterNetEvent('qb-electrician:client:VehPick', function()
 end)
 
 CreateThread(function()
-    if PlayerJob.name == "electrician" then
-        SetJobBlip("job")
+    local Player = QBCore.Functions.GetPlayerData()
+    if Player.job.name == "electrician" then
+        for _, jobpoint in pairs(Config.Locations['blip']) do
+            local blip = AddBlipForCoord(jobpoint.x, jobpoint.y, jobpoint.z)
+            SetBlipSprite(blip, 365)
+            SetBlipAsShortRange(blip, true)
+            SetBlipScale(blip, 1.0)
+            SetBlipColour(blip, 46)
+            BeginTextCommandSetBlipName('STRING')
+            AddTextComponentSubstringPlayerName(Lang:t('main.label'))
+            EndTextCommandSetBlipName(blip)
+        end
     end
 end) -- ensures blip for elictricians
 
