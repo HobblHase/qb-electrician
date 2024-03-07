@@ -11,6 +11,9 @@ Config.RepairTimeMax = 32000  -- the max. time that a repair can take
 Config.JobPrice = math.random(240, 290) -- Amount made per job completed. Note: This isn't the final amount as there is scripted bonuses for payments as well.
 
 Config.Locations = {
+    ["blip"] = {
+        coords = vector4(931.99, -1807.77, 30.71, 265.65),
+    },
     ["job"] = {
         coords = vector4(931.99, -1807.77, 30.71, 265.65),
     },
