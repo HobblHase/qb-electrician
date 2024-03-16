@@ -25,7 +25,7 @@ RegisterNetEvent('QBCore:Client:OnJobUpdate', function(JobInfo)
 end)
 
 --AddEventHandler('onResourceStart', function(resourceName)
-    if GetCurrentResourceName() ~= resourceName or not LocalPlayer.state.isLoggedIn then return end
+    --if GetCurrentResourceName() ~= resourceName or not LocalPlayer.state.isLoggedIn then return end
     --PlayerData = QBCore.Functions.GetPlayerData()
     --handleBlip()
 --end)
@@ -37,7 +37,7 @@ local function handleBlip() -- ensures Job-Blip
     end
 
     if Config.UseJob == true then
-        if Player.job.name == "electrician" then
+        if PlayerData.job and PlayerData.job.name == "electrician" then
             for _, jobpoint in pairs(Config.Locations['blip']) do
                 local blip = AddBlipForCoord(jobpoint.x, jobpoint.y, jobpoint.z)
                 SetBlipSprite(blip, 365)
@@ -110,7 +110,7 @@ CreateThread(function()
         Wait(0)
         local pos = GetEntityCoords(PlayerPedId())
         if Config.UseJob == true then
-            if Player.job.name == "electrician" then -- you can change the job on this line :D -- if in the config.lua 'UseJob = true' then you have to be in the job 'electrician' else you can do it w every job
+            if PlayerData.job and PlayerData.job.name == "electrician" then -- you can change the job on this line :D -- if in the config.lua 'UseJob = true' then you have to be in the job 'electrician' else you can do it w every job
                 if #(pos - vector3(Config.Locations["vehicle"].coords.x, Config.Locations["vehicle"].coords.y, Config.Locations["vehicle"].coords.z)) < 20 then
                     inRange = true
                     -- DrawMarker(2, Config.Locations["vehicle"].coords.x, Config.Locations["vehicle"].coords.y, Config.Locations["vehicle"].coords.z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.3, 0.2, 0.15, 200, 200, 200, 222, false, false, false, true, false, false, false)
@@ -213,7 +213,7 @@ RegisterNetEvent('qb-electrician:client:JobMarkers', function(k, v)
             local pos = GetEntityCoords(PlayerPedId())
             local Player = QBCore.Functions.GetPlayerData()
             if Config.UseJob == true then
-                if Player.job.name == "electrician" then -- you can change the job on this line :D -- if in the config.lua 'UseJob = true' then you have to be in the job 'electrician' else you can do it w every job
+                if PlayerData.job and PlayerData.job.name == "electrician" then -- you can change the job on this line :D -- if in the config.lua 'UseJob = true' then you have to be in the job 'electrician' else you can do it w every job
                     if CompleteRepairs < 5 then
                         if #(pos - vector3(v.x, v.y, v.z)) < 10 then
                             inRange = true
@@ -306,7 +306,7 @@ CreateThread(function()
         Wait(0)
         local pos = GetEntityCoords(PlayerPedId())
         if Config.UseJob == true then -- you can change the job on this line :D -- if in the config.lua 'UseJob = true' then you have to be in the job 'electrician' else you can do it w every job
-            if Player.job.name == "electrician" then
+            if PlayerData.job and PlayerData.job.name == "electrician" then
                 if #(pos - vector3(Config.Locations["payslip"].coords.x, Config.Locations["payslip"].coords.y, Config.Locations["payslip"].coords.z)) < 10 then
                     inRange = true
                     -- DrawMarker(2, Config.Locations["payslip"].coords.x, Config.Locations["payslip"].coords.y, Config.Locations["payslip"].coords.z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.3, 0.2, 0.15, 200, 200, 200, 222, false, false, false, true, false, false, false)
