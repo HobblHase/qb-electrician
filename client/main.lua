@@ -1,41 +1,11 @@
 local QBCore = exports['qb-core']:GetCoreObject()
-local Player = {}
 local PlayerData = {}
 local blip
+local isLoggedIn = false
 CompleteRepairs = 0
 JobsinSession = {}
 
-RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
-    PlayerData = QBCore.Functions.GetPlayerData()
-    handleBlip()
-end)
-
-RegisterNetEvent('QBCore:Client:OnPlayerUnload', function()
-    PlayerData = {}
-    if DoesBlipExist(blip) then RemoveBlip(blip) blip = nil end
-end)
-
-RegisterNetEvent('QBCore:Player:SetPlayerData', function(val)
-    PlayerData = val
-end)
-
-RegisterNetEvent('QBCore:Client:OnJobUpdate', function(JobInfo)
-    PlayerData.job = JobInfo
-    handleBlip()
-end)
-
---AddEventHandler('onResourceStart', function(resourceName)
-    --if GetCurrentResourceName() ~= resourceName or not LocalPlayer.state.isLoggedIn then return end
-    --PlayerData = QBCore.Functions.GetPlayerData()
-    --handleBlip()
---end)
-
 local function handleBlip() -- ensures Job-Blip
-    if DoesBlipExist(blip) then
-        RemoveBlip(blip)
-        blip = nil
-    end
-
     if Config.UseJob == true then
         if PlayerData.job and PlayerData.job.name == "electrician" then
             for _, jobpoint in pairs(Config.Locations['blip']) do
@@ -63,6 +33,34 @@ local function handleBlip() -- ensures Job-Blip
     end
 end
 
+RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
+    isLoggedIn = true
+    PlayerData = QBCore.Functions.GetPlayerData()
+    handleBlip()
+end)
+
+RegisterNetEvent('QBCore:Client:OnPlayerUnload', function()
+    isLoggedIn = false
+    PlayerData = {}
+    if DoesBlipExist(blip) then RemoveBlip(blip) blip = nil end
+end)
+
+RegisterNetEvent('QBCore:Player:SetPlayerData', function(val)
+    PlayerData = val
+end)
+
+RegisterNetEvent('QBCore:Client:OnJobUpdate', function(JobInfo)
+    PlayerData.job = JobInfo
+    handleBlip()
+end)
+
+AddEventHandler('onResourceStart', function(resourceName)
+    if GetCurrentResourceName() ~= resourceName and LocalPlayer.isLoggedIn then return end
+    PlayerData = QBCore.Functions.GetPlayerData()
+    handleBlip()
+    print(PlayerData.job.name)
+end)
+
 -- BLIP-Things end
 -- Job Blip Function
 local function SetWorkBlip(d)
@@ -81,8 +79,6 @@ local function SetWorkBlip(d)
     TriggerEvent('qb-electrician:client:JobMarkers')
 end
 
-
--- Checks if car is a Job Vehicle
 local function VehicleCheck(vehicle)
     local retval = false
     for k, v in pairs(Config.JobVehicles) do
@@ -101,6 +97,7 @@ RegisterNetEvent('qb-electrician:client:VehPick', function()
     local choice = math.random(1, #Config.JobVehicles)
     ElecVeh = Config.JobVehicles[choice]
     TriggerEvent('qb-electrician:client:SpawnVehicle', ElecVeh)
+    --Wait(1500)
 end)
 
 -- Markers for Job Vehicle
@@ -136,6 +133,7 @@ CreateThread(function()
                                 end
                             else
                                 TriggerEvent('qb-electrician:client:VehPick')
+                                Wait(1500) -- to prevent spamming
                             end
                         end
                     end
@@ -170,6 +168,7 @@ CreateThread(function()
                             end
                         else
                             TriggerEvent('qb-electrician:client:VehPick')
+                            Wait(1500) -- to prevent spamming
                         end
                     end
                 end
