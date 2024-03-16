@@ -5,13 +5,37 @@ local blip
 CompleteRepairs = 0
 JobsinSession = {}
 
+RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
+    PlayerData = QBCore.Functions.GetPlayerData()
+    handleBlip()
+end)
+
+RegisterNetEvent('QBCore:Client:OnPlayerUnload', function()
+    PlayerData = {}
+    if DoesBlipExist(blip) then RemoveBlip(blip) blip = nil end
+end)
+
+RegisterNetEvent('QBCore:Player:SetPlayerData', function(val)
+    PlayerData = val
+end)
+
+RegisterNetEvent('QBCore:Client:OnJobUpdate', function(JobInfo)
+    PlayerData.job = JobInfo
+    handleBlip()
+end)
+
+--AddEventHandler('onResourceStart', function(resourceName)
+    if GetCurrentResourceName() ~= resourceName or not LocalPlayer.state.isLoggedIn then return end
+    --PlayerData = QBCore.Functions.GetPlayerData()
+    --handleBlip()
+--end)
+
 local function handleBlip() -- ensures Job-Blip
     if DoesBlipExist(blip) then
         RemoveBlip(blip)
         blip = nil
     end
 
-    local Player = QBCore.Functions.GetPlayerData()
     if Config.UseJob == true then
         if Player.job.name == "electrician" then
             for _, jobpoint in pairs(Config.Locations['blip']) do
@@ -39,30 +63,6 @@ local function handleBlip() -- ensures Job-Blip
     end
 end
 
-RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
-    PlayerData = QBCore.Functions.GetPlayerData()
-    handleBlip()
-end)
-
-RegisterNetEvent('QBCore:Client:OnPlayerUnload', function()
-    PlayerData = {}
-    if DoesBlipExist(blip) then RemoveBlip(blip) blip = nil end
-end)
-
-RegisterNetEvent('QBCore:Player:SetPlayerData', function(val)
-    PlayerData = val
-end)
-
-RegisterNetEvent('QBCore:Client:OnJobUpdate', function(JobInfo)
-    PlayerData.job = JobInfo
-    handleBlip()
-end)
-
-AddEventHandler('onResourceStart', function(resourceName)
-    if GetCurrentResourceName() ~= resourceName or not LocalPlayer.state.isLoggedIn then return end
-    PlayerData = QBCore.Functions.GetPlayerData()
-    handleBlip()
-end)
 -- BLIP-Things end
 -- Job Blip Function
 local function SetWorkBlip(d)
@@ -110,7 +110,6 @@ CreateThread(function()
         Wait(0)
         local pos = GetEntityCoords(PlayerPedId())
         if Config.UseJob == true then
-        local Player = QBCore.Functions.GetPlayerData()
             if Player.job.name == "electrician" then -- you can change the job on this line :D -- if in the config.lua 'UseJob = true' then you have to be in the job 'electrician' else you can do it w every job
                 if #(pos - vector3(Config.Locations["vehicle"].coords.x, Config.Locations["vehicle"].coords.y, Config.Locations["vehicle"].coords.z)) < 20 then
                     inRange = true
@@ -307,7 +306,6 @@ CreateThread(function()
         Wait(0)
         local pos = GetEntityCoords(PlayerPedId())
         if Config.UseJob == true then -- you can change the job on this line :D -- if in the config.lua 'UseJob = true' then you have to be in the job 'electrician' else you can do it w every job
-            local Player = QBCore.Functions.GetPlayerData()
             if Player.job.name == "electrician" then
                 if #(pos - vector3(Config.Locations["payslip"].coords.x, Config.Locations["payslip"].coords.y, Config.Locations["payslip"].coords.z)) < 10 then
                     inRange = true
