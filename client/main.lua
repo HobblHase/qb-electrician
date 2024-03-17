@@ -1,25 +1,21 @@
 local QBCore = exports['qb-core']:GetCoreObject()
 local PlayerData = {}
-local blip
 local isLoggedIn = false
 CompleteRepairs = 0
 JobsinSession = {}
 
-local function handleBlip() -- ensures Job-Blip
-    if Config.UseJob == true then
-        if PlayerData.job and PlayerData.job.name == "electrician" then
-            for _, jobpoint in pairs(Config.Locations['blip']) do
-                local blip = AddBlipForCoord(jobpoint.x, jobpoint.y, jobpoint.z)
-                SetBlipSprite(blip, 365)
-                SetBlipAsShortRange(blip, true)
-                SetBlipScale(blip, 1.0)
-                SetBlipColour(blip, 46)
-                BeginTextCommandSetBlipName('STRING')
-                AddTextComponentSubstringPlayerName(Lang:t('main.label'))
-                EndTextCommandSetBlipName(blip)
-            end
+local blips = {}
+
+local function handleBlip()
+    for i = 1, #blips do
+        if DoesBlipExist(blips[i]) then
+            RemoveBlip(blips[i])
         end
-    else
+    end
+
+    blips = {}
+
+    if not Config.UseJob or PlayerData.job.name == 'electrician' then
         for _, jobpoint in pairs(Config.Locations['blip']) do
             local blip = AddBlipForCoord(jobpoint.x, jobpoint.y, jobpoint.z)
             SetBlipSprite(blip, 365)
@@ -29,9 +25,11 @@ local function handleBlip() -- ensures Job-Blip
             BeginTextCommandSetBlipName('STRING')
             AddTextComponentSubstringPlayerName(Lang:t('main.label'))
             EndTextCommandSetBlipName(blip)
+            blips[#blips+1] = blip
         end
     end
 end
+
 
 RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
     isLoggedIn = true
@@ -61,7 +59,6 @@ AddEventHandler('onResourceStart', function(resourceName)
     print(PlayerData.job.name)
 end)
 
--- BLIP-Things end
 -- Job Blip Function
 local function SetWorkBlip(d)
     for k, v in pairs(Config.Locations["jobset" ..d]) do
