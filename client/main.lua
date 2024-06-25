@@ -232,9 +232,9 @@ RegisterNetEvent('qb-electrician:client:JobMarkers', function(k, v)
                                             print(CompleteRepairs)
                                         end
                                         if CompleteRepairs <= 4 then
-                                            QBCore.Functions.Notify(Lang:t("succes.repaired"))
+                                            QBCore.Functions.Notify(Lang:t("success.repaired"))
                                         else
-                                            QBCore.Functions.Notify(Lang:t("succes.repaired_all"))
+                                            QBCore.Functions.Notify(Lang:t("success.repaired_all"))
                                         end
                                         RemoveBlip(v.BlipId)
                                         table.remove(JobsinSession, k)
@@ -273,9 +273,9 @@ RegisterNetEvent('qb-electrician:client:JobMarkers', function(k, v)
                                         print(CompleteRepairs)
                                     end
                                     if CompleteRepairs <= 4 then
-                                        QBCore.Functions.Notify(Lang:t("succes.repaired"))
+                                        QBCore.Functions.Notify(Lang:t("success.repaired"))
                                     else
-                                        QBCore.Functions.Notify(Lang:t("succes.repaired_all"))
+                                        QBCore.Functions.Notify(Lang:t("success.repaired_all"))
                                     end
                                     RemoveBlip(v.BlipId)
                                     table.remove(JobsinSession, k)
